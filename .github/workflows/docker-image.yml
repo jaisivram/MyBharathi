@@ -3,8 +3,6 @@ name: Docker Image CI
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
 jobs:
 
@@ -13,6 +11,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    
+    - name: docker login
+      env: 
+        DOCKER_USER: ${{ secrets.DOCKER_USER }}
+        DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+      run: docker login -u $DOCKER_USER -p $DOCKER_PASS
+      
+#    - name: remove old image
+#      run: docker rmi -f the-diary-repo:latest
+      
     - uses: actions/checkout@v3
+    
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-bharathi:latest
+      run: docker build -t chatbot:latest .
+      
+    - name: docker tag
+      run: docker tag chatbot:latest jaisivram/mybharathi-chatbot
+
+    - name: docker push 
+      run: docker push jaisivram/mybharathi-chatbot
