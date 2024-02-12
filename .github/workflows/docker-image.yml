@@ -16,7 +16,7 @@ jobs:
       env: 
         DOCKER_USER: ${{ secrets.DOCKER_USER }}
         DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
-      run: echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+      run: echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
       
 #    - name: remove old image
 #      run: docker rmi -f the-diary-repo:latest
