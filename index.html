@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="logo.png">
+    <title>MyBharathi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        .response-container {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            height: 60vh; /* 75% of the viewport height */
+            overflow-y: auto; /* Add vertical scrollbar if content overflows */
+        }
+
+        .input-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 8px;
+            margin-right: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            outline: none;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .history-container {
+            display: none;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 10px;
+            height: 200px;
+            overflow-y: auto;
+            border-radius: 4px;
+        }
+
+        .history-container.show {
+            display: block;
+        }
+
+        .chat-item {
+            margin-bottom: 6px;
+        }
+
+        .user-message {
+            color: #333;
+            background-color: #f2f2f2;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .bharathi-message {
+            color: #fff;
+            background-color: #007bff;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .loading {
+            display: none;
+            margin-bottom: 10px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <center><h1>KNOW YOUR SCHEMES</h1></center>
+    <div class="container">
+        <header>
+        </header>
+        <div class="response-container" id="response-container">
+            <!-- Response will be dynamically added here -->
+        </div>
+        <div class="input-container">
+            <input type="text" id="user-input" placeholder="Ask me">
+            <button id="submit-button">Ask</button>
+        </div>
+        <div class="loading" id="loading-message">Loading...</div>
+        <button id="history-button">History</button>
+        <button id="clear-history-button">Clear History</button>
+        <div class="history-container" id="history-container">
+            <!-- Chat history will be dynamically added here -->
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const submitButton = document.getElementById('submit-button');
+            const historyButton = document.getElementById('history-button');
+            const clearHistoryButton = document.getElementById('clear-history-button');
+            const historyContainer = document.getElementById('history-container');
+            const loadingMessage = document.getElementById('loading-message');
+            const userInput = document.getElementById('user-input');
+
+            // Retrieve chat history from localStorage
+            let chatHistory = JSON.parse(localStorage.getItem('chatHistory')) || [];
+
+            // Display chat history
+            chatHistory.forEach(([sender, message]) => {
+                const chatContainer = document.createElement('div');
+                chatContainer.textContent = `${sender}: ${message}`;
+                chatContainer.classList.add('chat-item', sender === 'You' ? 'user-message' : 'bharathi-message');
+                historyContainer.appendChild(chatContainer);
+            });
+
+            // Welcome text
+            const welcomeText = "Hi, I'm Bharathi. How can I help you?";
+            const welcomeContainer = document.createElement('div');
+            welcomeContainer.textContent = welcomeText;
+            welcomeContainer.classList.add('chat-item', 'bharathi-message');
+            historyContainer.appendChild(welcomeContainer);
+            chatHistory.push(['bharathi', welcomeText]);
+            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+
+            submitButton.addEventListener('click', sendMessage);
+            userInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+
+            historyButton.addEventListener('click', function () {
+                historyContainer.classList.toggle('show');
+            });
+
+            clearHistoryButton.addEventListener('click', function () {
+                // Clear chat history from UI and localStorage
+                historyContainer.innerHTML = '';
+                chatHistory = [];
+                localStorage.removeItem('chatHistory');
+            });
+
+            function sendMessage() {
+                const message = userInput.value.trim();
+                if (message) {
+                    // Display loading message
+                    loadingMessage.classList.add('show');
+
+                    // Store user message in chat history
+                    const userChatContainer = document.createElement('div');
+                    userChatContainer.textContent = `You: ${message}`;
+                    userChatContainer.classList.add('chat-item', 'user-message');
+                    historyContainer.appendChild(userChatContainer);
+
+                    // Prepare the prompt with contextual message
+                    let promptToSend = message;
+                    if (chatHistory.length > 0) {
+                        // Construct the prompt with conversation history
+                        let historyString = "Previous conversation: ";
+                        chatHistory.forEach(([sender, message]) => {
+                            historyString += `${sender}: ${message}; `;
+                        });
+                        promptToSend = `${historyString} Continuation: ${message}`;
+                    }
+
+                    // Clear user input
+                    userInput.value = '';
+
+                    // Fetch response from server
+                    fetch('/prompt', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ prompt: promptToSend })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Hide loading message
+                        loadingMessage.classList.remove('show');
+
+                        // Store the AI response in chat history
+                        const botMessage = data.response;
+                        const botChatContainer = document.createElement('div');
+                        botChatContainer.textContent = botMessage;
+                        botChatContainer.classList.add('chat-item', 'bharathi-message');
+                        historyContainer.appendChild(botChatContainer);
+                        chatHistory.push(['user', message], ['bharathi', botMessage]); // Store both user prompt and AI response
+                        localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+
+                        // Update UI with AI response
+                        const responseContainer = document.getElementById('response-container');
+                        const responseText = document.createElement('p');
+                        responseText.textContent = botMessage;
+                        responseContainer.innerHTML = '';
+                        responseContainer.appendChild(responseText);
+                    })
+                    .catch(error => console.error('Error:', error));
+                }
+            }
+        });
+    </script>
+</body>
+</html>
