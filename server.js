@@ -6,7 +6,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const app = express();
 const dotenv = require('dotenv');
 
-dotenv.config(); 
+dotenv.config({ path: '/ssl/.env' });
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_PRO_API);
 
 // Middleware to parse JSON bodies
@@ -52,8 +52,8 @@ app.get('/', (req, res) => {
 
 // HTTPS options
 const options = {
-    key: fs.readFileSync('./key.pem'),
-    cert: fs.readFileSync('./cert.pem')
+    key: fs.readFileSync('/ssl/key.pem'),
+    cert: fs.readFileSync('/ssl/cert.pem')
 };
 
 // Start HTTPS server
