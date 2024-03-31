@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,8 +39,10 @@
             margin-top: 10px;
             margin-bottom: 10px;
             border-radius: 10px;
-            height: 60vh; /* 75% of the viewport height */
-            overflow-y: auto; /* Add vertical scrollbar if content overflows */
+            height: 60vh;
+            /* 75% of the viewport height */
+            overflow-y: auto;
+            /* Add vertical scrollbar if content overflows */
         }
 
         .input-container {
@@ -109,8 +112,11 @@
         }
     </style>
 </head>
+
 <body>
-    <center><h1>KNOW YOUR SCHEMES</h1></center>
+    <center>
+        <h1>KNOW YOUR SCHEMES</h1>
+    </center>
     <div class="container">
         <header>
         </header>
@@ -195,7 +201,7 @@
                         chatHistory.forEach(([sender, message]) => {
                             historyString += `${sender}: ${message}; `;
                         });
-                        promptToSend = `${historyString} Continuation: ${message}`;
+                        promptToSend = `${historyString} note: give links as <a> tag with href the link's name in between <a></a>, Continuation: ${message}`;
                     }
 
                     // Clear user input
@@ -209,31 +215,36 @@
                         },
                         body: JSON.stringify({ prompt: promptToSend })
                     })
-                    .then(response => response.json())
-                    .then(data => {
-                        // Hide loading message
-                        loadingMessage.classList.remove('show');
+                        .then(response => response.json())
+                        .then(data => {
+                            // Hide loading message
+                            loadingMessage.classList.remove('show');
 
-                        // Store the AI response in chat history
-                        const botMessage = data.response;
-                        const botChatContainer = document.createElement('div');
-                        botChatContainer.textContent = botMessage;
-                        botChatContainer.classList.add('chat-item', 'bharathi-message');
-                        historyContainer.appendChild(botChatContainer);
-                        chatHistory.push(['user', message], ['bharathi', botMessage]); // Store both user prompt and AI response
-                        localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
+                            // Store the AI response in chat history
+                            const botMessage = data.response;
+                            console.log(botMessage)
+                            const formattedString = botMessage.replace(/\*/g, '<br>'); // Replace * with newline
+                            console.log(formattedString);
+                            const botChatContainer = document.createElement('div');
+                            botChatContainer.textContent = formattedString;
+                            botChatContainer.classList.add('chat-item', 'bharathi-message');
+                            historyContainer.appendChild(botChatContainer);
+                            chatHistory.push(['You', message], ['bharathi', botMessage]); // Store both user prompt and AI response
+                            localStorage.setItem('chatHistory', JSON.stringify(chatHistory));
 
-                        // Update UI with AI response
-                        const responseContainer = document.getElementById('response-container');
-                        const responseText = document.createElement('p');
-                        responseText.textContent = botMessage;
-                        responseContainer.innerHTML = '';
-                        responseContainer.appendChild(responseText);
-                    })
-                    .catch(error => console.error('Error:', error));
+                            // Update UI with AI response
+                            const responseContainer = document.getElementById('response-container');
+                            const responseText = document.createElement('p');
+                            //responseText.textContent = formattedString;
+                            responseContainer.innerHTML = formattedString;
+                            responseContainer.appendChild(responseText);
+
+                        })
+                        .catch(error => console.error('Error:', error));
                 }
             }
         });
     </script>
 </body>
+
 </html>
