@@ -201,7 +201,7 @@
                         chatHistory.forEach(([sender, message]) => {
                             historyString += `${sender}: ${message}; `;
                         });
-                        promptToSend = `${historyString} note: give links as <a> tag with href the link's name in between <a></a>, Continuation: ${message}`;
+                        promptToSend = `${historyString} note: strict rule, if user prompts for link, give them only in anchor tags of html, Continuation: ${message}`;
                     }
 
                     // Clear user input
