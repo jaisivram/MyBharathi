@@ -5,7 +5,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const app = express();
 const dotenv = require('dotenv');
-
+app.use(express.static('public'));
 dotenv.config({ path: '/ssl/.env' });
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_PRO_API);
 
